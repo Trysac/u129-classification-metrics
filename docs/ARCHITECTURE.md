@@ -1,29 +1,18 @@
 # Architecture
 
-## Purpose
+`trysac-classification-metrics` implements classification evaluation routines without external scientific libraries.
 
-`trysac-classification-metrics` is a small, dependency-free Python library: Classification metrics without numpy: confusion matrix, per-class precision, recall and F1, macro and micro F1, and seeded percentile bootstrap intervals
+## Core Concepts
 
-## Shape
+### 1. Label Resolution
+Labels default to `sorted(set(y_true) | set(y_pred))` when mutually orderable. If labels have heterogeneous unorderable types, the caller must pass explicit `labels`.
 
-```text
-caller code --> classification_metrics (public API in __init__.py)
-                    |
-                    +-- pure functions, no I/O, no global state
-```
+### 2. Zero-Division Handling
+Any `0/0` division returns `0.0` and records `(metric, label)` in `Report.undefined` in label order (with precision preceding recall for the same label). F1 when `p + r == 0` evaluates to `0.0` without duplicate undefined logging.
 
-- **Public API**: the names listed in `__all__` of `src/classification_metrics/__init__.py`. Anything else is
-  internal and may change without a major version.
-- **Errors**: invalid input raises built-in exceptions (`ValueError`, `TypeError`) with a clear
-  message; the library never prints or exits.
-- **Side effects**: none. If a feature needs I/O, isolate it in its own module behind a small
-  interface and record the choice in an ADR.
-
-## Quality contract
-
-`scripts/check.py` is the single definition of the gates; `fabrica.json` tells the factory and CI
-how to run it. See [TESTING.md](TESTING.md).
-
-## Decisions
-
-Architecture decisions are recorded in [decisions/](decisions/) as numbered ADRs.
+### 3. Percentile Bootstrap Interval
+Bootstrap draws `n` indices with replacement using Python's standard `random.Random(seed)`. The percentile interval calculates:
+- `alpha = 1 - confidence`
+- `lower = s[floor(alpha / 2 * B)]`
+- `upper = s[ceil((1 - alpha / 2) * B) - 1]`
+where `s` is the sorted list of resampled statistics.

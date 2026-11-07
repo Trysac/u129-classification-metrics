@@ -1,48 +1,42 @@
 # classification-metrics
 
-[![PyPI version](https://img.shields.io/pypi/v/trysac-classification-metrics)](https://pypi.org/project/trysac-classification-metrics/)
-[![License: MIT](https://img.shields.io/pypi/l/trysac-classification-metrics)](LICENSE)
-[![CI](https://github.com/Trysac/u129-classification-metrics/actions/workflows/ci.yml/badge.svg)](https://github.com/Trysac/u129-classification-metrics/actions/workflows/ci.yml)
+Classification metrics without numpy: confusion matrix, per-class precision, recall and F1, macro and micro F1, and seeded percentile bootstrap intervals. This library relies exclusively on the Python standard library.
 
-Classification metrics without numpy: confusion matrix, per-class precision, recall and F1, macro and micro F1, and seeded percentile bootstrap intervals
+## The Problem
+Evaluation scripts often report single accuracy scores without uncertainty estimation, potentially misinterpreting small variations as significant progress. Furthermore, importing large scientific libraries like `scikit-learn` or `numpy` solely for basic metrics adds heavy dependencies, and conventions for zero-division behavior often differ between tools.
 
-## Problem
-
-Describe in two or three sentences the concrete problem this utility solves, who hits it, and what
-they do today without it. Replace this paragraph when the first real feature lands.
-
-## Install
-
-```sh
-pip install trysac-classification-metrics
-# or
-uv add trysac-classification-metrics
+## Installation
+```bash
+pip install classification-metrics
 ```
-
-Requires Python 3.10 or newer. No runtime dependencies.
 
 ## Usage
-
 ```python
-import classification_metrics
+from classification_metrics import report, bootstrap_ci
 
-# normalize() trims surrounding whitespace and lower-cases the text.
-print(classification_metrics.normalize("  Hello World "))  # -> "hello world"
+y_true = ["a", "a", "b", "b"]
+y_pred = ["a", "b", "b", "b"]
+rep = report(y_true, y_pred)
+# Accuracy: 0.75, Macro-F1: 0.7333
 
-# Blank input is rejected explicitly instead of returning an empty string.
-try:
-    classification_metrics.normalize("   ")
-except ValueError as exc:
-    print(f"rejected: {exc}")
+ci = bootstrap_ci(y_true, y_pred, "accuracy", n_resamples=1000, seed=7)
+print(f"Accuracy 95% CI: [{ci.lower:.2f}, {ci.upper:.2f}]")
 ```
 
-## Documentation
+## Public API Summary
+- `confusion_matrix(y_true, y_pred, *, labels=None, max_samples=1_000_000)`
+- `report(y_true, y_pred, *, labels=None, max_samples=1_000_000)`
+- `bootstrap_ci(y_true, y_pred, metric, *, n_resamples=1000, confidence=0.95, seed=0, labels=None, max_samples=1_000_000)`
 
-- [Architecture](docs/ARCHITECTURE.md) and [decisions](docs/decisions/)
-- [Testing](docs/TESTING.md) and [security](docs/SECURITY.md)
-- [Project record](docs/PROJECT.md) and [stack](docs/STACK.md)
-- [Changelog](CHANGELOG.md) and [contributing guide](CONTRIBUTING.md)
+**Options:**
+- `labels`: Explicit label sequence; required if labels are not orderable.
+- `max_samples`: Limits input size (default 1,000,000).
+- `metric`: Choice of "accuracy", "macro_f1", "micro_f1" for bootstrap.
 
-## License
+**Errors:**
+Functions raise `MetricsError` with codes: `length_mismatch`, `empty_input`, `unknown_label`, `unknown_metric`, `invalid_parameter`, or `too_many_samples`.
 
-[MIT](LICENSE) (c) 2026 Miguel Gomez
+## Why not scikit-learn?
+`scikit-learn` introduces heavy runtime dependencies. This utility provides a zero-dependency, standard-library-only implementation with explicit zero-division reporting (via the `Report.undefined` field) and built-in, reproducible bootstrap confidence intervals.
+
+See [docs/SECURITY.md](docs/SECURITY.md) for threat modeling details.

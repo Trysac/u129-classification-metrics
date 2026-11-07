@@ -1,19 +1,11 @@
-# Security notes
+# Security
 
-## Threat model
+## Threat Model
 
-`trysac-classification-metrics` is a pure library without I/O. The main risks are:
+### Defended
+- **Denial of Service (Input Size):** The utility restricts the input sequence length via `max_samples` (default: 1,000,000). Sequences exceeding this limit trigger a `too_many_samples` `MetricsError`.
+- **Denial of Service (Resampling):** The number of bootstrap resamples is capped at `100,000` to prevent excessive computation.
+- **Information Leakage:** Exception messages are truncated to 200 characters to prevent accidental exposure of potentially large or sensitive input payloads.
 
-- **Supply chain**: a compromised dependency or CI action. Mitigation: no runtime dependencies,
-  Dependabot weekly updates, actions pinned to major versions, minimal workflow permissions.
-- **Leaked secrets**: tokens committed by mistake. Mitigation: `gitleaks` runs in the local gates
-  and in CI; `.env` files are git-ignored.
-- **Untrusted input**: callers may pass hostile strings. Mitigation: validate input and fail with
-  explicit exceptions; never `eval`, `exec` or deserialize untrusted data.
-
-## Publishing
-
-Releases are published to PyPI with trusted publishing (OIDC) when available, never with a
-long-lived token stored in the repository.
-
-To report a vulnerability, see [SECURITY.md](../SECURITY.md).
+### Not Defended
+- **Adversarial Parsing:** This utility assumes standard, non-adversarial Python sequences. It does not perform sanitization for malicious memory-exhausting object structures beyond length checks.
