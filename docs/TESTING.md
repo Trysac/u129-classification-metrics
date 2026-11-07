@@ -1,20 +1,9 @@
 # Testing
 
-## Running
+Tests are located in `tests/test_classification_metrics.py` and executed using `pytest`.
 
-```sh
-uv run pytest --cov=classification_metrics   # tests with coverage report
-uv run python scripts/check.py      # every gate, as CI and the factory run it
-```
-
-## Policy
-
-- Branch coverage of `src/classification_metrics` must stay at or above 80 %; the gate fails below it.
-- Tests exercise the public API (`import classification_metrics`) and assert every observable effect:
-  return values, raised exceptions and their messages.
-- Each bug fix starts with a failing test that reproduces it.
-- Tests are deterministic: no network, no wall clock, no dependence on test order.
-
-## Layout
-
-`tests/test_<module>.py` mirrors each public module. Shared fixtures go in `tests/conftest.py`.
+## Test Coverage
+- **Acceptance Criteria:** Validates report metrics against fixed vectors, ensuring accuracy and F1 scores match expected values (including `pytest.approx` checks).
+- **Error Handling:** Exercises all `MetricsError` codes, including length mismatches, empty inputs, and unknown labels.
+- **Confusion Matrix:** Verifies row/column indexing of the contingency table.
+- **Bootstrap Logic:** Validates deterministic output using a seeded `random.Random` instance and checks interval boundaries using a stub resampler that produces predictable index sets.

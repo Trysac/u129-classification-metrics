@@ -9,4 +9,5 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Add classification metrics, confusion matrix, report with undefined division tracking, and seeded bootstrap CI.
 - Initial project structure from the factory utility template.
