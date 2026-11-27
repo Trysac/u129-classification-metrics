@@ -6,8 +6,10 @@ Classification metrics without numpy: confusion matrix, per-class precision, rec
 Evaluation scripts often report single accuracy scores without uncertainty estimation, potentially misinterpreting small variations as significant progress. Furthermore, importing large scientific libraries like `scikit-learn` or `numpy` solely for basic metrics adds heavy dependencies, and conventions for zero-division behavior often differ between tools.
 
 ## Installation
+
+Not published to PyPI yet. Install it from GitHub:
 ```bash
-pip install classification-metrics
+pip install "git+https://github.com/Trysac/u129-classification-metrics"
 ```
 
 ## Usage
